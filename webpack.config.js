@@ -1,5 +1,9 @@
+  
+require('dotenv').config();
+
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 const BUILD_PATH = 'build';
 const BUILD_INDEX_JS_PATH = `index.js`;
@@ -35,6 +39,10 @@ module.exports = {
       filename: path.resolve(__dirname, `${BUILD_PATH}/index.html`),
       template: 'src/index.html',
       inject: true
-    })
+    }),
+    new webpack.EnvironmentPlugin([
+      'AUTH0_DOMAIN',
+      'AUTH0_CLIENT_ID',
+    ])
   ]
 };
