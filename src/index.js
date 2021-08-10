@@ -40,20 +40,25 @@ function clearLoginHistory(): void {
  * エントリポイント
  */
 window.addEventListener('load', async (): Promise<void> => {
+  const loginButton: HTMLElement = document.querySelector('#login-button') 
+    ?? document.createElement('button');
+  const logoffButton: HTMLElement = document.querySelector('#logoff-button')
+    ?? document.createElement('button');
+  const messageSearchResult = document.querySelector('#message');
+  const message: HTMLInputElement = (messageSearchResult instanceof HTMLInputElement)
+    ? messageSearchResult
+    : document.createElement('input');
+  const sendButton: HTMLElement = document.querySelector('#send-button')
+    ?? document.createElement('button');
+
   const auth0 = await createAuth0ClientHelper();
   if (isLoginSuccessRedirect()) {
     await auth0.handleRedirectCallback();
     clearLoginHistory();
   }
-
-  const loginButton = document.querySelector('#login-button') 
-    ?? document.createElement('button');
   loginButton.addEventListener('click', async (): Promise<void> => {
     await auth0.loginWithRedirect({redirect_uri: window.location.origin});
   });
-  
-  const logoffButton = document.querySelector('#logoff-button')
-    ?? document.createElement('button');
   logoffButton.addEventListener('click', () => {
     auth0.logout({returnTo: window.location.origin});
   });
@@ -66,5 +71,18 @@ window.addEventListener('load', async (): Promise<void> => {
 
   const accessToken = await auth0.getTokenSilently();
   const websocketURL = process.env.SLS_CAHT_API_URL ?? '';
-  new WebSocket(`${websocketURL}?token=${accessToken}`);  // TODO socketを利用する
+  const websocket = new WebSocket(`${websocketURL}?token=${accessToken}`);
+  websocket.addEventListener('message', (e: MessageEvent) => {
+    console.log(e.data);
+  });
+  websocket.addEventListener('error', (e: Event) => {
+    console.error('websocket error', e);
+  });
+  sendButton.addEventListener('click', () => {
+    const data = message.value;
+    message.value = '';
+    const originData = {action: "sendmessage", data};
+    const json = JSON.stringify(originData);
+    websocket.send(json);
+  });
 });
