@@ -43,6 +43,8 @@ module.exports = {
     new webpack.EnvironmentPlugin([
       'AUTH0_DOMAIN',
       'AUTH0_CLIENT_ID',
+      'AUTH0_AUDIENCE',
+      'SLS_CAHT_API_URL',
     ])
   ]
 };
